@@ -8520,6 +8520,8 @@ let
 
   mockobjects = callPackage ../development/libraries/java/mockobjects { };
 
+  nailgun = callPackage ../development/tools/java/nailgun { };
+
   saxon = callPackage ../development/libraries/java/saxon { };
 
   saxonb = callPackage ../development/libraries/java/saxon/default8.nix { };
