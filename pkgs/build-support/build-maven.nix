@@ -7,9 +7,16 @@
 , fetchurl, writeText, requireFile
 }:
 
-with builtins;
-
-with lib.trivial;
+# Unqualified imports
+with (lib.unqualifiedImport [
+  { set = lib.trivial; names = [ "id" ]; }
+  { set = lib.strings; names = [ "escape" ]; }
+  { set = builtins;
+    names = [ "filter" "fromJSON"
+              "hasAttr" "getAttr"
+              "hashString" "readFile" ];
+  }
+]);
 
 args@{
      # Required arguments
@@ -36,32 +43,35 @@ args@{
 
      # Overrides
      , overrideJDK   ? jdk   # Override the Maven JDK with the given path
+     , extraDeps     ? []    # Extra Maven dependencies to add
      , extraSettings ? ""    # Additional settings to add to settings.xml
      , attrFunc      ? id    # This gets run on the mkDerivation attribute set
      , ...                   # Additional args are added to the
      }:                      # invocation of stdenv.mkDerivation
 
 let info      = fromJSON (readFile infoFile);
-               
+
     retrieve  = set: if authp set then requireFile else fetchurl;
     hasURL    = set: (hasAttr "url"  set) &&
                      (hasAttr "sha1" set);
     fetch     = set: (retrieve set) { inherit (set) url sha1; };
-               
+
     authp     = set: (hasAttr "authenticated" set) &&
                      (getAttr "authenticated" set);
     aid       = set: set.artifactId;
     gid       = set: set.groupId;
     rid       = set: set.repository-id;
     vers      = set: set.unresolved-version or set.version;
-               
+
     tr        = chara: charb: string: lib.replaceChars [chara] [charb] string;
+    escapeSed = escape ["'" "|"];
     sed       = pat: rep: string:
       readFile (runCommand ''sed-${hashString "md5" string}'' {} ''
-          echo '${string}' | sed 's|${pat}|${rep}|g' - > $out
+          echo '${escape ["'"] string}' > $out
+          sed -i 's|${escapeSed pat}|${escapeSed rep}|g' $out
       '');
 
-    getDir    = dep: ''${tr "." "/" (gid dep)}/${(aid dep)}/${vers dep}'';
+    getDir    = dep: ''${tr "." "/" (gid dep)}/${aid dep}/${vers dep}'';
 
     scriptGen = dep:
       let fetchDep  = fetch dep;
@@ -78,14 +88,16 @@ let info      = fromJSON (readFile infoFile);
           ${lib.optionalString (dep ? metadata) linkScript}
       '';
 
+    depends = filter hasURL (info.dependencies ++ extraDeps);
+
     script = writeText "build-maven-repository.sh" ''
-        ${lib.concatStrings (map scriptGen (filter hasURL info.dependencies))}
+        ${lib.concatStrings (map scriptGen depends)}
     '';
 
     repo = runCommand "maven-repository" {} ''
         bash ${script}
     '';
-
+    
     settingsFile = writeText "settings.xml" ''
         <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -113,17 +125,22 @@ let info      = fromJSON (readFile infoFile);
     testPhase = if runTests then runMaven testFlags testCmd else "";
 
     defaultPostPackage = "mv target/*.jar $out";
-    
+
     persistentAttrs = oldAttrs: oldAttrs // {
       buildInputs = [
         jdk
         (maven.override { jdk = overrideJDK; })
       ] ++ oldAttrs.buildInputs;
     };
+
+    # Necessary for args that are not also strings
+    removeArgs = [
+      "infoFile" "postPackagePhase" "compileCmd" "docCmd" "testCmd" "packageCmd"
+      "mavenFlags" "compileFlags" "docFlags" "testFlags" "packageFlags" "genDoc"
+      "runTests" "overrideJDK" "extraDeps" "extraSettings" "attrFunc"
+    ];
 in
 stdenv.mkDerivation (attrFunc (persistentAttrs ({
-  inherit compilePhase docPhase testPhase packagePhase;
-
   name = "${info.project.artifactId}-${info.project.version}.jar";
 
   buildPhase = ''
@@ -138,7 +155,7 @@ stdenv.mkDerivation (attrFunc (persistentAttrs ({
 
   installPhase = ''
       ${packagePhase}
-      
+
       ${if postPackagePhase == "" then defaultPostPackage else postPackagePhase}
   '';
-} // args)))
+} // (removeAttrs args removeArgs))))

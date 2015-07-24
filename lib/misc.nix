@@ -177,8 +177,21 @@ rec {
                 inherit getter compare;
                 };
 
+  # Creates an attribute set for importing specific elements of a set into
+  # the namespace of a file.
+  #
+  # Example usage:
+  # with unqualifiedImport [
+  #   { set = lib.trivial; names = [ "id" ]; }
+  #   { set = builtins;
+  #     names = [ "filter" "hasAttr" "getAttr" "hashString" ];
+  #   }
+  # ];
 
-                
+  unqualifiedImport = (with builtins;
+    let uqi = set: name: { inherit name; value = getAttr name set; };
+    in xs: listToAttrs (concatLists (map (x: map (uqi x.set) x.names) xs)));
+              
   condConcat = name: list: checker:
         if list == [] then name else
         if checker (head list) then 
