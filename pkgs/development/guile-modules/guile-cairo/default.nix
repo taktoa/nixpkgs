@@ -4,11 +4,11 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "guile-cairo-1.4.1";
+  name = "guile-cairo-1.9.91";
 
   src = fetchurl {
-    url = "http://download.gna.org/guile-cairo/${name}.tar.gz";
-    sha256 = "1f5nd9n46n6cwfl1byjml02q3y2hgn7nkx98km1czgwarxl7ws3x";
+    url = "mirror://savannah/guile-cairo/${name}.tar.gz";
+    sha256 = "03g0vjcrfy5frfnhqv0ihhzwi3vx366b2rkkjqxwbpwl6c43cf0s";
   };
 
   buildInputs = [ pkgconfig cairo expat guile guileLib ];
