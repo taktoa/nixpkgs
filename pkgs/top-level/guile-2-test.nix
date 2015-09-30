@@ -64,7 +64,7 @@ in (mapTestOn {
   guileGnome = linux;
   guileLib = linux;
   guileLint = linux;
-  guile_ncurses = linux;
+  guileNcurses = linux;
   gwrap = linux;
   swig = linux;
   gnutls = linux;

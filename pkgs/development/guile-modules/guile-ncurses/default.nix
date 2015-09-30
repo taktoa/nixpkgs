@@ -1,4 +1,7 @@
-{ fetchurl, stdenv, guile, ncurses, libffi }:
+{ fetchurl, stdenv    # general build dependencies
+, ncurses, libffi     # non-Guile dependencies
+, guile               # Guile dependencies
+}:
 
 stdenv.mkDerivation rec {
   name = "guile-ncurses-1.4";
@@ -8,26 +11,25 @@ stdenv.mkDerivation rec {
     sha256 = "070wl664lsm14hb6y9ch97x9q6cns4k6nxgdzbdzi5byixn74899";
   };
 
-  buildInputs = [ guile ncurses libffi ];
+  buildInputs = [ ncurses libffi guile ];
 
-  preConfigure =
-    '' configureFlags="$configureFlags --with-guilesitedir=$out/share/guile/site" '';
+  preConfigure = ''
+      configureFlags="$configureFlags --with-guilesitedir=$out/share/guile/site"
+  '';
 
-  doCheck = false;  # XXX: 1 of 65 tests failed
+  doCheck = false; # XXX: 1 of 65 tests failed
 
   meta = {
-    description = "GNU Guile-Ncurses, Scheme interface to the NCurses libraries";
-
-    longDescription =
-      '' GNU Guile-Ncurses is a library for the Guile Scheme interpreter that
-         provides functions for creating text user interfaces.  The text user
-         interface functionality is built on the ncurses libraries: curses,
-         form, panel, and menu.
-      '';
-
+    description = "guile-ncurses: ncurses bindings for GNU Guile Scheme";
+    longDescription = ''
+        Guile-Ncurses is a library for the Guile Scheme interpreter that
+        provides functions for creating text user interfaces. The text user
+        interface functionality is built on the ncurses libraries:
+        curses, form, panel, and menu.
+    '';
+    homepage = http://www.gnu.org/software/guile-ncurses;
     license = stdenv.lib.licenses.lgpl3Plus;
-
-    maintainers = [ ];
-    platforms = stdenv.lib.platforms.gnu;  # arbitrary choice
+    maintainers = [ stdenv.lib.maintainers.taktoa ];
+    platforms = guile.meta.platforms;
   };
 }

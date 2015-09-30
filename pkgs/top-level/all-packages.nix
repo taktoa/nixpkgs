@@ -5205,7 +5205,7 @@ let
 
   guileLib = callPackage ../development/guile-modules/guile-lib { };
 
-  guile_ncurses = callPackage ../development/guile-modules/guile-ncurses { };
+  guileNcurses = callPackage ../development/guile-modules/guile-ncurses { };
 
   guile-opengl = callPackage ../development/guile-modules/guile-opengl { };
 
