@@ -1,4 +1,7 @@
-{stdenv, fetchurl, guile, texinfo}:
+{ stdenv, fetchurl    # general build dependencies
+, gcc, texinfo        # non-Guile dependencies
+, guile               # Guile dependencies
+}:
 
 assert stdenv ? cc && stdenv.cc.isGNU;
 
@@ -10,29 +13,27 @@ stdenv.mkDerivation rec {
     sha256 = "1f9n2b5b5r75lzjinyk6zp6g20g60msa0jpfrk5hhg4j8cy0ih4b";
   };
 
-  buildInputs = [guile texinfo];
+  buildInputs = [ guile texinfo ];
 
   doCheck = true;
 
-  preCheck =
-    # Make `libgcc_s.so' visible for `pthread_cancel'.
-    '' export LD_LIBRARY_PATH="$(dirname $(echo ${stdenv.cc.cc}/lib*/libgcc_s.so)):$LD_LIBRARY_PATH"
-    '';
+  # Make libgcc_s.so visible for pthread_cancel.
+  preCheck = ''
+      ld-set () { export LD_LIBRARY_PATH="$1"; }
+      ld-add () { ld-set "''${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$1"; }
+      ld-add "$(dirname $(echo ${gcc.cc}/lib*/libgcc_s.so))"
+  '';
 
   meta = {
-    description = "Guile-Library, a collection of useful Guile Scheme modules";
-
-    longDescription =
-      '' guile-lib is intended as an accumulation place for pure-scheme Guile
-         modules, allowing for people to cooperate integrating their generic
-         Guile modules into a coherent library.  Think "a down-scaled,
-         limited-scope CPAN for Guile".
-      '';
-
+    description = "guile-lib: a collection of useful GNU Guile Scheme modules";
+    longDescription = ''
+        guile-lib is intended as an accumulation place for pure-scheme Guile
+        modules, allowing for people to cooperate integrating their generic
+        Guile modules into a coherent library.
+    '';
     homepage = http://www.nongnu.org/guile-lib/;
     license = stdenv.lib.licenses.gpl3Plus;
-
-    maintainers = [ ];
-    platforms = stdenv.lib.platforms.gnu;  # arbitrary choice
+    maintainers = [ stdenv.lib.maintainers.taktoa ];
+    platforms = guile.meta.platforms;
   };
 }
