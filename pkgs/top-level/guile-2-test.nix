@@ -62,7 +62,7 @@ in (mapTestOn {
   texmacs = linux;
   guileCairo = linux;
   guileGnome = linux;
-  guile_lib = linux;
+  guileLib = linux;
   guileLint = linux;
   guile_ncurses = linux;
   gwrap = linux;

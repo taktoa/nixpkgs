@@ -5203,7 +5203,7 @@ let
     inherit (gnome) gnome_vfs libglade libgnome libgnomecanvas libgnomeui;
   };
 
-  guile_lib = callPackage ../development/guile-modules/guile-lib { };
+  guileLib = callPackage ../development/guile-modules/guile-lib { };
 
   guile_ncurses = callPackage ../development/guile-modules/guile-ncurses { };
 

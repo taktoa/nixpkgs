@@ -1,4 +1,4 @@
-{ fetchgit, stdenv, guile, guile_lib, gwrap
+{ fetchgit, stdenv, guile, guileLib, gwrap
 , pkgconfig, gconf, glib, gnome_vfs, gtk
 , libglade, libgnome, libgnomecanvas, libgnomeui
 , pango, guileCairo, autoconf, automake, texinfo }:
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
     libgnomeui
     pango
     guileCairo
-  ] ++ stdenv.lib.optional doCheck guile_lib;
+  ] ++ stdenv.lib.optional doCheck guileLib;
 
   preConfigure = ''
       ./autogen.sh
