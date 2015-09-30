@@ -65,10 +65,10 @@ in (mapTestOn {
   guileLib = linux;
   guileLint = linux;
   guileNcurses = linux;
+  guileSLIB = linux;
   gwrap = linux;
   swig = linux;
   gnutls = linux;
-  slibGuile = linux;
   dico = linux;
   trackballs = linux;
   beast = linux;

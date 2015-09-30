@@ -5207,11 +5207,18 @@ let
 
   guileNcurses = callPackage ../development/guile-modules/guile-ncurses { };
 
-  guile-opengl = callPackage ../development/guile-modules/guile-opengl { };
+  guileOpenGL = callPackage ../development/guile-modules/guile-opengl { };
 
-  guile-sdl = callPackage ../development/guile-modules/guile-sdl { };
+  guileSDL = callPackage ../development/guile-modules/guile-sdl { };
 
-  guile-xcb = callPackage ../development/guile-modules/guile-xcb { };
+  guileSLIB = callPackage ../development/libraries/slib {
+    scheme = guile_1_8;
+    # otherwise errors with:
+    #   "must be after `@defun' to use `@defunx'"
+    texinfo = texinfo4;
+  };
+    
+  guileXCB = callPackage ../development/guile-modules/guile-xcb { };
 
   pharo-vm = callPackage_i686 ../development/pharo/vm { };
   pharo-launcher = callPackage ../development/pharo/launcher { };
@@ -8142,11 +8149,6 @@ let
   skalibs = callPackage ../development/libraries/skalibs { };
 
   slang = callPackage ../development/libraries/slang { };
-
-  slibGuile = callPackage ../development/libraries/slib {
-    scheme = guile_1_8;
-    texinfo = texinfo4; # otherwise erros: must be after `@defun' to use `@defunx'
-  };
 
   smpeg = callPackage ../development/libraries/smpeg { };
 
@@ -11537,7 +11539,7 @@ let
     inherit (gnome2) libgnomeui libgtkhtml gtkhtml libbonoboui libgnomeprint libglade libart_lgpl;
     gconf = gnome2.GConf;
     guile = guile_1_8;
-    slibGuile = slibGuile.override { scheme = guile_1_8; };
+    slibGuile = guileSLIB.override { scheme = guile_1_8; };
     goffice = goffice_0_8;
   };
 
