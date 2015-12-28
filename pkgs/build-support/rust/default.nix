@@ -30,30 +30,26 @@ in stdenv.mkDerivation (args // {
     echo "Using cargo deps from $cargoDeps"
 
     cp -r "$cargoDeps" deps
-    chmod +w deps -R
+    chmod -R +w deps
 
-    # It's OK to use /dev/null as the URL because by the time we do this, cargo
-    # won't attempt to update the registry anymore, so the URL is more or less
-    # irrelevant
+    # It's OK to use /dev/null as the URL because by the time we do this,
+    # cargo won't attempt to update the registry anymore, so the URL is more 
+    # or less irrelevant
 
-    cat <<EOF > deps/config
-    [registry]
-    index = "file:///dev/null"
-    EOF
+    printf "[registry]\nindex = \"file:///dev/null\"" > deps/config
 
     export CARGO_HOME="$(realpath deps)"
 
     # Let's find out which $indexHash cargo uses for file:///dev/null
-    (cd $sourceRoot && cargo fetch &>/dev/null) || true
+    ( cd "$sourceRoot" && cargo fetch &>/dev/null ) || true
     cd deps
     indexHash="$(basename $(echo registry/index/*))"
 
     echo "Using indexHash '$indexHash'"
 
-    rm -rf -- "registry/cache/$indexHash" \
-              "registry/index/$indexHash"
+    rm -rf -- "registry/cache/$indexHash" "registry/index/$indexHash"
 
-    mv registry/cache/HASH "registry/cache/$indexHash"
+    mv "registry/cache/HASH" "registry/cache/$indexHash"
 
     echo "Using rust registry from $rustRegistry"
     ln -s "$rustRegistry" "registry/index/$indexHash"
@@ -62,12 +58,7 @@ in stdenv.mkDerivation (args // {
     cd ..
     mv deps/Cargo.lock $sourceRoot/
 
-    (
-        cd $sourceRoot
-
-        cargo fetch
-        cargo clean
-    )
+    ( cd $sourceRoot; cargo fetch; cargo clean )
   '' + (args.postUnpack or "");
 
   prePatch = ''
@@ -75,13 +66,13 @@ in stdenv.mkDerivation (args // {
     (
         set -euo pipefail
 
-        cd ../deps/registry/src/*
+        cd ${"../deps/registry/src/*"}
 
-        for script in $patchRegistryDeps/*; do
+        for script in ${"$patchRegistryDeps/*"}; do
           # Run in a subshell so that directory changes and shell options don't
           # affect any following commands
 
-          ( . $script)
+          ( . $script )
         done
     )
   '' + (args.prePatch or "");

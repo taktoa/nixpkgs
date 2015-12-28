@@ -1,36 +1,32 @@
 #! /bin/sh
 
-source $stdenv/setup
+. "${stdenv}/setup"
 
 set -euo pipefail
 
-src=$(realpath $1)
-out=$(realpath $2)
+src="$(realpath "${1}")"
+out="$(realpath "${2}")"
 
-echo "Fetching $src to $out"
+echo "Fetching ${src} to ${out}"
 
-mkdir $out
+mkdir "${out}"
 
 # Configure cargo to fetch from a local copy of the crates.io registry
 
-echo "Using rust registry from $rustRegistry"
+echo "Using rust registry from ${rustRegistry}"
 
-cat <<EOF > $out/config
-[registry]
-index = "file://$rustRegistry"
-EOF
+printf "[registry]\nindex = \"file://%s\"" "${rustRegistry}" > "${out}/config"
 
-export CARGO_HOME=$out
-cd $src
+export CARGO_HOME="${out}"
+cd "${src}"
 
-if [[ ! -f Cargo.lock ]]; then
+if [ ! -f Cargo.lock ]; then
     echo
     echo "ERROR: The Cargo.lock file doesn't exist"
     echo
     echo "Cargo.lock is needed to make sure that depsSha256 doesn't change"
     echo "when the registry is updated."
     echo
-
     exit 1
 fi
 
@@ -38,12 +34,12 @@ fi
 # doesn't ignore the versions specified in Cargo.lock
 set +u
 substituteInPlace Cargo.lock \
-    --replace "registry+https://github.com/rust-lang/crates.io-index" \
-              "registry+file://$rustRegistry"
+  --replace "registry+https://github.com/rust-lang/crates.io-index" \
+            "registry+file://${rustRegistry}"
 set -u
 
 # Do any possible 'cargo update -p <pkgName> --precise <version>' ad-hoc updates
-eval "$cargoUpdateHook"
+eval "${cargoUpdateHook}"
 
 # Do the fetch
 cargo fetch --verbose
@@ -90,7 +86,7 @@ cargo fetch --verbose
 # Let's start
 
 # Remove cargo config file, which points to the ever-changing registry
-rm $out/config
+rm "${out}/config"
 
 # Save the Cargo.lock file into the output, so that we don't have to do another
 # 'cargo update' during the build (which would try to access the network) for
@@ -101,23 +97,25 @@ rm $out/config
 
 set +u
 substituteInPlace Cargo.lock \
-    --replace "registry+file://$rustRegistry" \
-              "registry+file:///dev/null"
+  --replace "registry+file://${rustRegistry}" \
+            "registry+file:///dev/null"
 set -u
-mv Cargo.lock $out/
+mv Cargo.lock "${out}/"
 
 
 # Let's replace $indexHash with something more deterministic
-mv $out/registry/cache/* $out/registry/cache/HASH
+if [ "$(echo "${out}"/registry/cache/*)" != "" ]; then
+    mv "${out}"/registry/cache/* "${out}"/registry/cache/HASH
+fi
 
 # The registry index changes all the time, so it's not deterministic
 # We'll symlink it before running 'cargo build'
-rm -rf $out/registry/index/*
+rm -rf "${out}"/registry/index/*
 
 # Make git DBs deterministic
 # TODO: test with git submodules
-[[ ! -d $out/git/checkouts ]] || (cd $out/git/checkouts && for name in *; do
-    cd "$out/git/checkouts/$name"
+[ ! -d "${out}"/git/checkouts ] || (cd "${out}"/git/checkouts && for n in *; do
+    cd "$out/git/checkouts/${n}"
     revs=""
     for branch in *; do
         cd "$branch"
@@ -129,39 +127,50 @@ rm -rf $out/registry/index/*
     (
         # The following code was adapted from nix-prefetch-git
 
-        cd "$out/git/db/$name"
+        cd "$out/git/db/${n}"
 
-        export GIT_DIR=.
+        export GIT_DIR="."
 
         # Remove all remote branches
-        git branch -r | while read branch; do
+        git branch -r | while read -r branch; do
             git branch -rD "$branch" >&2
         done
 
         # Remove all tags
-        git tag | while read tag; do
+        git tag | while read -r tag; do
             git tag -d "$tag" >&2
         done
 
         # Remove all local branches
-        branchrefs=()
-        eval "$(git for-each-ref --shell --format='branchrefs+=(%(refname))' refs/heads/)"
-
-        for branchref in "${branchrefs[@]}"; do
-            git update-ref -d "$branchref" >&2
+        
+        branchrefs=""
+        fill-branchrefs () {
+            git for-each-ref                                     \
+                --shell                                          \
+                --format='branchrefs="%(refname) ${branchrefs}"' \
+                refs/heads/
+        }
+        eval "$(fill-branchrefs)"
+        
+        for branchref in ${branchrefs}; do
+            git update-ref -d "${branchref}" >&2
         done
 
         # Create ad-hoc branches for the revs we need
-        echo "$revs" | while read rev; do
+        echo "$revs" | while read -r rev; do
             echo "Creating git branch b_$rev $rev"
-            git branch b_$rev $rev
+            git branch "b_${rev}" "${rev}"
         done
 
         # Remove files that have timestamps or otherwise have non-deterministic
         # properties.
-        rm -rf logs/ hooks/ index FETCH_HEAD ORIG_HEAD refs/remotes/origin/HEAD config
+        rm -rf                       \
+           logs/ hooks/ index config \
+           FETCH_HEAD ORIG_HEAD      \
+           refs/remotes/origin/HEAD
 
-        # Do a full repack. Must run single-threaded, or else we lose determinism.
+        # Do a full repack.
+        # Must run single-threaded, or else we lose determinism.
         git config pack.threads 1
         git repack -A -d -f
         rm -f config
@@ -172,5 +181,5 @@ rm -rf $out/registry/index/*
 done)
 
 # Remove unneeded outputs
-[[ ! -d $out/registry/src ]] || rm -rf $out/registry/src
-[[ ! -d $out/git/checkouts ]] || rm -rf $out/git/checkouts
+[ ! -d "${out}/registry/src"  ] || rm -rf "${out}/registry/src"
+[ ! -d "${out}/git/checkouts" ] || rm -rf "${out}/git/checkouts"
