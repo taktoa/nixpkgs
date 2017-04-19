@@ -5,16 +5,39 @@ with rec {
   nullAllInSet    = lib.attrsets.mapAttrs (k: v: null);
   makeDummy       = name: buildEnv { name = "${name}-dummy"; paths = []; };
   compose         = lib.foldl' (f: g: x: (f (g x))) (x: x);
-  apply           = str: fs: ((compose fs) (lib.getAttr str super));
+  apply           = str: fs: ((compose (lib.reverseList fs)) (lib.getAttr str super));
   override        = args:   drv: drv.override args;
   overrideAttrs   = cb:     drv: drv.overrideAttrs cb;
-  addBuildInputs  = inputs: drv: drv; # FIXME
-  addNativeInputs = inputs: drv: drv; # FIXME
-  addPatch        = patch:  drv: drv; # FIXME
-  confFlags       = flags:  drv: drv; # FIXME
+
+  appendOld = attr: old: add: (
+    let x = old.${attr} or [];
+    in (if isNull x then add else (x ++ add)));
+
+  addBuildInputs = inputs: overrideAttrs (old: {
+    buildInputs = appendOld "buildInputs" old inputs;
+  });
+
+  addNativeInputs = inputs: overrideAttrs (old: {
+    nativeBuildInputs = appendOld "nativeBuildInputs" old inputs;
+  });
+
+  addPatch = patch: overrideAttrs (old: {
+    patches = appendOld "patches" old [patch];
+  });
+
+  confFlags = flags: overrideAttrs (old: {
+    configureFlags = appendOld "configureFlags" old flags;
+  });
+
   confFlag        = str:    confFlags [str];
   confDisable     = str:    confFlag "--disable-${str}";
   confEnable      = str:    confFlag "--enable-${str}";
+
+  # For debugging purposes
+  # MINGW-packages = name: (
+  #   let base = ../../../../MINGW-packages;
+  #   in builtins.toPath "${base}/mingw-w64-${name}/"
+  # );
 };
 
 {
@@ -37,7 +60,6 @@ with rec {
 
   # General broken libraries
 
-  lzip              = null;
   libedit           = null;
   libgnome_keyring  = null;
   libgnome_keyring3 = null;
@@ -48,15 +70,11 @@ with rec {
 
   a52dec         = null;
   aalib          = null;
-  libass         = null;
-  libcaca        = null;
   libdv          = null;
   libmpeg2       = null;
   libpulseaudio  = null;
   librsvg        = null;
   libshout       = null;
-  libvpx         = null;
-  libwebp        = null;
   mjpegtools     = null;
   mjpegtoolsFull = null;
   openjpeg       = null;
@@ -64,23 +82,23 @@ with rec {
   taglib         = null;
   fluidsynth     = null;
   wildmidi       = null;
+  imlib2         = null;
 
   # Font/rendering-related broken libraries
 
   cairo        = null;
   pango        = null;
   fontconfig   = null;
-  freetype     = null;
   ghostscript  = null;
   harfbuzz     = null;
   harfbuzz-icu = null;
   icu          = null;
-  mesa         = null;
 
   # Broken executables
+  mariadb    = null;
+  postgresql = null;
 
-  mariadb              = null;
-  postgresql           = null;
+  ### Tools not useful for cross-builds
   rtags                = null;
   include-what-you-use = null;
 
@@ -96,6 +114,7 @@ with rec {
   wayland     = null;
   libv4l      = null;
   v4l_utils   = null;
+  mesa        = null;
 
   ### Other Unix-specific packages
 
@@ -109,32 +128,33 @@ with rec {
 
   ### Build tools
 
-  # cmake        = super.buildPackages.cmake;
-  # cmakeCurses  = super.buildPackages.cmakeCurses;
-  # cmake_2_8    = super.buildPackages.cmake_2_8;
-  # cmakeWithGui = super.buildPackages.cmakeWithGui;
-  # autogen      = super.buildPackages.autogen;
-  # pkgconfig    = super.buildPackages.pkgconfig;
-  # m4           = super.buildPackages.m4;
-  # help2man     = super.buildPackages.help2man;
-  # intltool     = super.buildPackages.intltool;
-  # texinfo      = super.buildPackages.texinfo;
+  # cmake        = null;
+  # cmakeCurses  = null;
+  # cmake_2_8    = null;
+  # cmakeWithGui = null;
+  # autogen      = null;
+  # pkgconfig    = null;
+  # m4           = null;
+  # help2man     = null;
+  # intltool     = null;
+  # texinfo      = null;
+  # groff        = null;
 
   ### Languages and compilers
 
-  # perl        = super.buildPackages.perl;
-  # ruby        = super.buildPackages.ruby;
-  # python      = super.buildPackages.python;
-  # vala        = super.buildPackages.vala;
-  # guile       = super.buildPackages.guile;
-  # yasm        = super.buildPackages.yasm;
-  # bison       = super.buildPackages.bison;
-  # bison2      = super.buildPackages.bison2;
-  # bison3      = super.buildPackages.bison3;
-  # flex        = super.buildPackages.flex;
-  # flex_2_5_35 = super.buildPackages.flex_2_5_35;
-  # flex_2_6_1  = super.buildPackages.flex_2_6_1;
-  # yacc        = super.buildPackages.yacc;
+  # perl        = null;
+  # ruby        = null;
+  # python      = null;
+  # vala        = null;
+  # guile       = null;
+  # yasm        = null;
+  # bison       = null;
+  # bison2      = null;
+  # bison3      = null;
+  # flex        = null;
+  # flex_2_5_35 = null;
+  # flex_2_6_1  = null;
+  # yacc        = null;
 
   ### Miscellaneous packages
 
@@ -167,8 +187,8 @@ with rec {
 
   libxml2Python = super.libxml2;
 
-  gettext = apply "gettext" [
-    (addBuildInputs [super.libiconv])];
+  # gettext = apply "gettext" [
+  #   (addBuildInputs [super.libiconv])];
 
   x264 = apply "x264" [
     (confFlag "--cross-prefix=x86_64-w64-mingw32-")];
@@ -188,7 +208,20 @@ with rec {
     (confEnable  "static")];
 
   nettle = apply "nettle" [
-    (addNativeInputs [self.m4])];
+    (confEnable  "shared")
+    (confEnable  "public-key")
+    (addNativeInputs [super.buildPackages.m4])];
+
+  unbound = apply "unbound" [
+    (confEnable  "shared")
+    (confDisable "static")
+    (confDisable "rpath")
+    (confFlag    "--with-libevent=no")
+    (confFlag    "--without-pyunbound")
+    (confFlag    "--without-pythonmodule")
+    (confFlag    "--without-pthreads")
+    (confFlag    "--with-libunbound-only")
+  ];
 
   libgsf = apply "libgsf" [
     (addPatch ./fixes/libgsf-dllmain.patch)
@@ -223,9 +256,71 @@ with rec {
     (confEnable  "static")
     (addNativeInputs [self.glib.dev])];
 
-  groff = apply "groff" [
+  ncurses = apply "ncurses" [
+    (addPatch ./fixes/ncurses-libsystre.patch)
+    (confFlag    "--without-ada")
+    (confFlag    "--with-cxx")
+    (confFlag    "--without-shared")
+    (confFlag    "--without-pthread")
+    (confDisable "rpath")
+    (confEnable  "colorfgbg")
+    (confEnable  "ext-colors")
+    (confEnable  "ext-mouse")
+    (confDisable "symlinks")
+    (confEnable  "warnings")
+    (confEnable  "assertions")
+    (confDisable "home-terminfo")
+    (confEnable  "database")
+    (confEnable  "sp-funcs")
+    (confEnable  "term-driver")
+    (confEnable  "interop")];
+
+  libcaca = apply "libcaca" [
+    (addPatch ./fixes/libcaca-win32.patch)
+    (addPatch ./fixes/libcaca-msc.patch)];
+
+  popt = apply "popt" [
+    (addPatch ./fixes/popt-uid.patch)
+    (addPatch ./fixes/popt-ioctl.patch)];
+
+  libvpx = apply "libvpx" [
     (overrideAttrs (old: {
-      crossAttrs = {};
+      configureFlags = [
+        "--target=x86_64-win64-gcc"
+        "--force-target=x86_64-win64-gcc"
+        "--enable-static-msvcrt"
+        "--enable-vp8"
+        "--enable-vp9"
+        "--enable-runtime-cpu-detect"
+        "--enable-postproc"
+        "--enable-pic"
+        "--enable-shared"
+        "--enable-static"
+        "--enable-experimental"
+        "--enable-spatial-svc"
+        "--disable-examples"
+        "--disable-docs"
+        "--disable-install-docs"
+        "--disable-install-srcs"
+        "--disable-unit-tests"
+        "--disable-decode-perf-tests"
+        "--disable-encode-perf-tests"
+        "--as=yasm"
+      ];
     }))
+    (addPatch ./fixes/libvpx-patch1.patch)
+    (addPatch ./fixes/libvpx-patch2.patch)
+    (addPatch ./fixes/libvpx-patch3.patch)
+    (addPatch ./fixes/libvpx-patch5.patch)
+    (addPatch ./fixes/libvpx-patch9.patch)
   ];
+
+  # NOTE: libdv needs pthreads
+
+  # a52dec = apply "a52dec" [
+  #   (confDisable "static")
+  #   (confEnable  "shared")
+  #   (addPatch ./fixes/a52dec-build.patch)
+  #   (addPatch ./fixes/a52dec-inline.patch)
+  #   (overrideAttrs (old: { postPatch = (old.postPatch or "") + "\nsed -i 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/' configure.in"; }))];
 }

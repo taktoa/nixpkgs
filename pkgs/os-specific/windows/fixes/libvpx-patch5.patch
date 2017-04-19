@@ -1,0 +1,12 @@
+diff --git a/vpx/exports_enc b/vpx/exports_enc
+index 914e36c..9781e83 100644
+--- a/vpx/exports_enc
++++ b/vpx/exports_enc
+@@ -2,6 +2,7 @@ text vpx_codec_enc_config_default
+ text vpx_codec_enc_config_set
+ text vpx_codec_enc_init_multi_ver
+ text vpx_codec_enc_init_ver
++text vpx_codec_enc_init_multi_ver
+ text vpx_codec_encode
+ text vpx_codec_get_cx_data
+ text vpx_codec_get_global_headers

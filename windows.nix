@@ -16,6 +16,7 @@ import ./. {
   # };
 
   overlays = [
+    (self: super: { stdenv = super.stdenv // { isWindows = true; }; })
     (import ./pkgs/os-specific/windows/overlay.nix)
   ];
 }

@@ -4,7 +4,7 @@ stdenv.mkDerivation rec {
   name = "lzip-${version}";
   version = "1.18";
 
-  buildInputs = [ texinfo ];
+  nativeBuildInputs = [ texinfo ];
 
   src = fetchurl {
     url = "mirror://savannah/lzip/${name}.tar.gz";

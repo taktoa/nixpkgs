@@ -66,7 +66,9 @@ stdenv.mkDerivation rec {
     sha256 = "10fs7xilf2bsj5bqw206lb5r5dgl84p5m6nibiirk28lmjx1i3l0";
   };
 
-  patchPhase = ''patchShebangs .'';
+  postPatch = ''
+      patchShebangs .
+  '';
 
   outputs = [ "bin" "dev" "out" ];
   setOutputFlags = false;

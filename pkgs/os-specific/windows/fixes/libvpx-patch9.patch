@@ -1,0 +1,19 @@
+diff --git a/vpx/src/svc_encodeframe.c b/vpx/src/svc_encodeframe.c
+index c2f80d8..4b79d6f 100644
+--- a/vpx/src/svc_encodeframe.c
++++ b/vpx/src/svc_encodeframe.c
+@@ -28,14 +28,6 @@
+ #include "vpx_mem/vpx_mem.h"
+ #include "vp9/common/vp9_onyxc_int.h"
+ 
+-#ifdef __MINGW32__
+-#define strtok_r strtok_s
+-#ifndef MINGW_HAS_SECURE_API
+-// proto from /usr/x86_64-w64-mingw32/include/sec_api/string_s.h
+-_CRTIMP char *__cdecl strtok_s(char *str, const char *delim, char **context);
+-#endif /* MINGW_HAS_SECURE_API */
+-#endif /* __MINGW32__ */
+-
+ #ifdef _MSC_VER
+ #define strdup _strdup
+ #define strtok_r strtok_s

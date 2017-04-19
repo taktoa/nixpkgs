@@ -1,8 +1,8 @@
 { stdenv, fetchurl, pkgconfig, yasm
 , freetype, fribidi
-, encaSupport ? true, enca ? null # enca support
-, fontconfigSupport ? true, fontconfig ? null # fontconfig support
-, harfbuzzSupport ? true, harfbuzz ? null # harfbuzz support
+, encaSupport ? false, enca ? null # enca support
+, fontconfigSupport ? false, fontconfig ? null # fontconfig support
+, harfbuzzSupport ? false, harfbuzz ? null # harfbuzz support
 , rasterizerSupport ? false # Internal rasterizer
 , largeTilesSupport ? false # Use larger tiles in the rasterizer
 , libiconv
