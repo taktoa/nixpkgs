@@ -10,7 +10,7 @@
 with stdenv.lib;
 
 assert stdenv.isFreeBSD || stdenv.isDarwin || stdenv.cc.isGNU;
-assert stdenv.isLinux -> utillinuxMinimal != null;
+# assert stdenv.isLinux -> utillinuxMinimal != null;
 
 # TODO:
 # * Add gio-module-fam

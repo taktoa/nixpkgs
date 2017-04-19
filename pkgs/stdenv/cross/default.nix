@@ -33,19 +33,41 @@ in bootStages ++ [
     targetPlatform = crossSystem;
     inherit config overlays;
     selfBuild = false;
-    stdenv = if crossSystem.useiOSCross or false
-      then let
-          inherit (buildPackages.darwin.ios-cross {
-              prefix = crossSystem.config;
-              inherit (crossSystem) arch;
-              simulator = crossSystem.isiPhoneSimulator or false; })
-            cc binutils;
-        in buildPackages.makeStdenvCross
-          buildPackages.stdenv crossSystem
-          binutils cc
-      else buildPackages.makeStdenvCross
-        buildPackages.stdenv crossSystem
-        buildPackages.binutilsCross buildPackages.gccCrossStageFinal;
-  })
 
+    stdenv = (rec {
+      bp = buildPackages;
+      cs = crossSystem;
+
+      makeStdenv = bp.makeStdenvCross bp.stdenv cs;
+
+      iosStdenv = (
+        let
+          compiler = bp.darwin.ios-cross {
+            prefix = cs.config;
+            inherit (cs) arch;
+            simulator = cs.isiPhoneSimulator or false;
+          };
+        in makeStdenv compiler.binutils compiler.cc
+      );
+
+      clangMinGWStdenv = (
+        let
+          compiler = bp.windows.clang-mingw-cross {
+            prefix = cs.config;
+            inherit (cs) arch;
+          };
+        in makeStdenv compiler.binutils compiler.cc
+      );
+
+      normalStdenv = (
+        makeStdenv bp.binutilsCross bp.gccCrossStageFinal
+      );
+
+      stdenv = (
+        if      cs.useiOSCross   or false then iosStdenv
+        else if cs.useClangMinGW or false then clangMinGWStdenv
+        else                                   normalStdenv
+      );
+    }).stdenv;
+  })
 ]

@@ -47,6 +47,7 @@ rec {
   vendors = setTypes "vendor" {
     apple = {};
     pc = {};
+    w64 = {};
     unknown = {};
   };
 
@@ -80,6 +81,7 @@ rec {
     openbsd = { execFormat = elf;     families = { inherit unix bsd; }; };
     solaris = { execFormat = elf;     families = { inherit unix; }; };
     win32   = { execFormat = pe;      families = { inherit dos; }; };
+    mingw32 = { execFormat = pe;      families = { inherit dos; }; };
   };
 
 

@@ -12343,6 +12343,10 @@ with pkgs;
     };
 
     wxMSW = callPackage ../os-specific/windows/wxMSW-2.8 { };
+
+    clang-mingw-cross = callPackage ../os-specific/windows/clang-mingw {
+      # libc = mingw_w64_headers;
+    };
   };
 
   wirelesstools = callPackage ../os-specific/linux/wireless-tools { };
