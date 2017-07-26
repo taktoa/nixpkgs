@@ -587,18 +587,91 @@ rec {
        parseEmail "invalid@garbage@nixos.org"
        => null
   */
-  parseEmail = email: (
+  parseEmail = email: builtins.trace (builtins.toJSON email) (
+    assert builtins.isString email;
     with rec {
-      b = builtins;
-      regex   = "^([^.@][^@]*[^.@]|[^.@])@([^.@][^@]*[^.@]|[^.@])$";
-      matched = b.match regex email;
-      mayFail = b.tryEval (
-        assert (b.isString email) && (b.stringLength email <= 254);
-        assert (b.isList matched) && (b.length matched == 2);
-        with { localPart = b.elemAt matched 0; domain = b.elemAt matched 1; };
-        assert (b.isString localPart) && (b.stringLength localPart <= 64);
-        assert (b.isString domain)    && (b.stringLength domain    <= 255);
-        { inherit localPart domain; });
+      ensure     = pred: value: if pred value then value else null;
+      assertPred = pred: value: value; #(assert pred value; value);
+      # regex      = "([a-z0-9!#$%&'*+/=?^_`{|}~-]+([.][a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"([\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(([a-z0-9]([a-z0-9-]*[a-z0-9])?[.])+[a-z0-9]([a-z0-9-]*[a-z0-9])?[.]?|[[]((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:([\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)[]])";
+      matched    = with { x = builtins.match regex email; }; builtins.trace (builtins.toJSON (if x == null then null else (lib.zipListsWith (x: y: { index = x; value = y; }) (lib.range 0 1000) x))) x;
+      localPart  = assertPred builtins.isString (builtins.elemAt matched 0);
+      domain     = assertPred builtins.isString (builtins.elemAt matched 67);
+
+      folder = ({ index, level, output }: char: (
+        with { f = l: o: { index = index + 1; level = l; output = o; }; };
+        if      char == "(" then f (level + 1) ([index] ++ output)
+        else if char == ")" then f (level - 1) output
+        else                     f level       output));
+      foo = builtins.foldr folder { index = 0; level = 0; output = []; };
+
+      regex = (rec {
+        rVChar        = "[[:print:]]";
+        rCRLF         = "\r\n";
+        rWSP          = "[ \t]";
+        rFWS          = "((${rWSP}*${rCRLF})?)";
+        rCFWS         = "((${rFWS}?${rComment})+${rFWS}?|${rFWS})";
+        rPrintable    = "[[:alnum:]!#$%&'*+,-./:;<=>?@^_`{|}~]";
+        rAT           = "[[:alnum:]!#$%&'*+/=?^_`{}|~-]";
+        rDT           = "(${rPrintable}|[()\"])";
+        rCT           = "(${rPrintable}|\\]|\\[|\")";
+        rQT           = "(${rPrintable}|\\]|\\[|[()])";
+        rQuotedPair   = "([\\](${rVChar}|${rWSP}))";
+        rQContent     = "(${rQT}|${rQuotedPair})";
+        rQuotedString = "(${rCFWS}?\"(${rFWS}?${rQContent})*${rFWS}\")";
+        rDotAtom      = "(${rCFWS}?${rAT}+([.]${rAT}+)*${rCFWS}?)";
+        rCContent     = "(${rCT}|${rQuotedPair})"; # no nested comments
+        rComment      = "([(](${rFWS}?${rCContent})*${rFWS}?[)])";
+        rDomainLit    = "${rCFWS}?[[](${rFWS}?${rDT})*${rFWS}?[]]${rCFWS}?";
+        rDomain       = "(${rDotAtom}|${rDomainLit})";
+        rLocalPart    = "(${rDotAtom}|${rQuotedString})";
+        rAddress      = "${rLocalPart}(@)${rDomain}";
+      }.rAddress);
+
+      # rxObsFWS       = "";
+      # rxObsDT        = "";
+      # rxObsCT        = "";
+      # rxObsQT        = "";
+      # rxObsQuotedPair = "";
+      # rxObsLocalPart = "";
+      # rxObsDomain    = "";
+      # rxQuotedPair   = "([\\](${rxVChar}|${rxWSP})|${rxObsQuotedPair})";
+      # rxQContent     = "(${rxQT}|${rxQuotedPair})";
+      # rxQuotedString = "(${rxCFWS}?\"(${rxFWS}?${rxQContent})*${rxFWS}\")";
+      # rxDotAtom      = "(${rxCFWS}?${rxAT}+([.]${rxAT}+)*${rxCFWS}?)";
+      # rxCRLF         = "\r\n";
+      # rxWSP          = "[ \t]";
+      # rxFWS          = "((${rxWSP}*${rxCRLF})?|${rxObsFWS})";
+      # rxCFWS         = "((${rxFWS}?${rxComment})+${rxFWS}?|${rxFWS})";
+      # rxAT           = "[[:alnum:]!#$%&'*+/=?^_`{}|~-]";
+      # rxDT           = "([[:printable:]]|${rxObsDT})"; # should be printable minus '[', ']', '\'
+      # rxCT           = "([[:printable:]]|${rxObsCT})"; # should be printable minus '(', ')', '\'
+      # rxQT           = "([[:printable:]]|${rxObsQT})"; # should be printable minus '"', '\'
+      # rxCContent     = "(${rxCT}|${rxQuotedPair})"; # no nested comments
+      # rxComment      = "([(](${rxFWS}?${rxCContent})*${rxFWS}?[)])";
+      # rxDomainLit    = "${rxCFWS}?[[](${rxFWS}?${rxDT})*${rxFWS}?[]]${rxCFWS}?";
+      # rxDomain       = "(${rxDotAtom}|${rxDomainLit}|${rxObsDomain})";
+      # rxLocalPart    = "(${rxDotAtom}|${rxQuotedString}|${rxObsLocalPart})";
+      # rxAddress      = "${rxLocalPart}@${rxDomain}";
     };
-    if mayFail.success then mayFail.value else null);
+    debug);
+
+    # (lib.lists.composeList (map ensure [
+    #   # An email is never longer than 254 characters.
+    #   # We could include this in the regular expression, but that would make it
+    #   # annoyingly long, so we just check it before matching.
+    #   (_: builtins.stringLength email <= 254)
+    #
+    #   # Match must have succeeded.
+    #   (_: builtins.isList matched)
+    #
+    #   # Exactly two groups should be captured by this regex.
+    #   (_: builtins.length matched == 2)
+    #
+    #   # The local part must be shorter than 64 characters.
+    #   (_: builtins.stringLength localPart <= 64)
+    #
+    #   # This should never fail but it's good insurance in case things change.
+    #   (_: builtins.stringLength domain <= 255)
+    # ]))
+    # { inherit localPart domain; });
 }

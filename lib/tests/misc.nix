@@ -103,8 +103,8 @@ runTests {
 
   testParseEmail = {
     expr = map strings.parseEmail [
+      # Simple tests
       "hydra@nixos.org"
-      "hydra(comment)@nixos.org"
       "\"quoted\"@nixos.org"
       ""
       "invalid"
@@ -112,12 +112,92 @@ runTests {
       ".invalid@nixos.org"
       "invalid.@nixos.org"
       "invalid@garbage@nixos.org"
+
+      # All of these should be valid
+      "prettyandsimple@example.com"
+      "very.common@example.com"
+      "disposable.email.with+symbol@example.com"
+      "other.email-with-dash@example.com"
+      "-starts-with-dash@example.com"
+      "ends-with-dash-@example.com"
+      "fully-qualified-domain@example.com."
+      "x@example.com"
+      "\"very.weird.@.weird.com\"@example.com"
+      "\"very.(),:;<>[]\\\".ODD.\\\"very@\\\\ \\\"very\\\".odd\"@weird.com"
+      "example-indeed@strange-example.com"
+      "admin@mailserver1"
+      "#!$%&'*+-/=?^_`{}|~@example.com"
+      "\"()<>[]:,;@\\\\\\\"!#$%&'-/=?^_`{}| ~.a\"@example.com"
+      "\" \"@example.com"
+      "example@s.solutions"
+      "user@localserver"
+      "user@[IPv6:2001:DB8::1]"
+
+      # All of these should be invalid
+
+      ### No @ character:
+      "Abc.example.com"
+
+      ### Only one @ is allowed outside quotation marks:
+      "A@b@c@example.com"
+
+      ### None of the special characters in this local-part are allowed outside
+      ### quotation marks:
+      "a\"b(c)d,e:f;g<h>i[j\\k]l@example.com"
+
+      ### Quoted strings must be dot separated or the only element making up
+      ### the local-part:
+      "just\"not\"right@example.com"
+
+      ### Spaces, quotes, and backslashes may only exist when within quoted
+      ### strings and preceded by a backslash:
+      "this is\"not\\allowed@example.com"
+
+      ### Even if escaped (preceded by a backslash), spaces, quotes, and
+      ### backslashes must still be contained by quotes:
+      "this\\ still\\\"not\\\\allowed@example.com"
+
+      ### Too long:
+      "1234567890123456789012345678901234567890123456789012345678901234+x@example.com"
+
+      ### Double dot before `@`:
+      "john..doe@example.com"
+
+      ### Sent from localhost:
+      "example@localhost"
     ];
     expected = [
-      { localPart = "hydra";          domain = "nixos.org"; }
-      { localPart = "hydra(comment)"; domain = "nixos.org"; }
-      { localPart = "\"quoted\"";     domain = "nixos.org"; }
+      { localPart = "hydra";      domain = "nixos.org"; }
+      { localPart = "\"quoted\""; domain = "nixos.org"; }
       null null null null null null
+
+      { localPart = "prettyandsimple";              domain = "example.com"; }
+      { localPart = "very.common";                  domain = "example.com"; }
+      { localPart = "disposable.email.with+symbol"; domain = "example.com"; }
+      { localPart = "other.email-with-dash";        domain = "example.com"; }
+      { localPart = "-starts-with-dash";            domain = "example.com"; }
+      { localPart = "ends-with-dash-";              domain = "example.com"; }
+      { localPart = "fully-qualified-domain";       domain = "example.com."; }
+      { localPart = "x";                            domain = "example.com"; }
+      { localPart = "\"very.weird.@.weird.com\"";   domain = "example.com"; }
+      { localPart = "\"very.weird.@.weird.com\"";   domain = "example.com"; }
+      {
+        localPart = "\"very.(),:;<>[]\\\".ODD.\\\"very@\\\\ \\\"very\\\".odd\"";
+        domain    = "weird.com";
+      }
+      { localPart = "example-indeed";      domain = "strange-example.com"; }
+      { localPart = "admin";               domain = "mailserver1"; }
+      { localPart = "#!$%&'*+-/=?^_`{}|~"; domain = "example.com"; }
+      {
+        localPart = "\"()<>[]:,;@\\\\\\\"!#$%&'-/=?^_`{}| ~.a\"";
+        domain = "example.com";
+      }
+      { localPart = "\" \"";   domain = "example.com"; }
+      { localPart = "example"; domain = "s.solutions"; }
+      { localPart = "user";    domain = "localserver"; }
+      { localPart = "user";    domain = "[IPv6:2001:DB8::1]"; }
+
+      null null null null null null null null null
     ];
   };
 
@@ -229,6 +309,14 @@ runTests {
     expected = false;
   };
 
+  testComposeList = {
+    expr = [
+      (composeList [] 5)
+      (composeList [(x: x + 1) (x: x * 2)] 5)
+      (composeList [(x: x * 2) (x: x + 1)] 5)
+    ];
+    expected = [5 12 11];
+  };
 
 # GENERATORS
 # these tests assume attributes are converted to lists

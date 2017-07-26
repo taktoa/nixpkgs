@@ -485,4 +485,21 @@ rec {
     (!(builtins.elem (builtins.head a) b) &&
      mutuallyExclusive (builtins.tail a) b);
 
+  /* Compose all the functions in list, from left to right.
+     For example, `composeList [f g h]` is the same as `(x: h (g (f x)))`.
+
+     This function uses a strict left fold, though that shouldn't matter
+     for most applications.
+
+     Example:
+       composeList [] 5
+       => 5
+
+       composeList [(x: x + 1) (x: x * 2)] 5
+       => 12
+
+       composeList [(x: x * 2) (x: x + 1)] 5
+       => 11
+  */
+  composeList = foldl' (f: g: x: (g (f x))) (x: x);
 }
