@@ -35,6 +35,7 @@ let
   mkDerivationImpl = pkgs.callPackage ./generic-builder.nix {
     inherit stdenv;
     inherit (pkgs) fetchurl pkgconfig glibcLocales coreutils gnugrep gnused;
+    haskell-indexer = pkgs.haskellPackages.haskell-indexer-pipeline-ghckythe-wrapper;
     nodejs = pkgs.nodejs-slim;
     jailbreak-cabal = if (self.ghc.cross or null) != null
       then self.ghc.bootPkgs.jailbreak-cabal
@@ -56,7 +57,14 @@ let
     })) (drv: {
         isLibrary = false;
         postFixup = "rm -rf $out/lib $out/share $out/nix-support";
-    });
+      });
+      haskell-indexer-wrapper = stdenv.mkDerivation {
+        name = "haskell-indexer-wrapper-0.1";
+        buildInputs = [pkgs.haskellPackages.haskell-indexer-pipeline-ghckythe-wrapper];
+        unpackPhase = "cp $src ./ghc-wrapper.sh";
+        src = ./ghc_wrapper.sh;
+        patchPhase = ''sed -i "s@ghc_kythe_wrapper@${pkgs.haskellPackages.haskell-indexer-pipeline-ghckythe-wrapper}/bin/ghc_kythe_wrapper@" ./ghc-wrapper.sh'';
+        installPhase = "install -m755 -D ./ghc-wrapper.sh $out/bin/ghc-8.0.2"; };
   };
 
   mkDerivation = makeOverridable mkDerivationImpl;
@@ -185,6 +193,14 @@ in package-set { inherit pkgs stdenv callPackage; } self // {
       in if pkgs.lib.inNixShell then drv.env else drv;
 
     ghcWithPackages = selectFrom: withPackages (selectFrom self);
+
+    ghcWithIndexer = selectFrom:
+      let
+        packages = selectFrom self;
+        haskell-indexer = callPackage ./haskell-indexer.nix {
+          inherit packages;
+        };
+      in withPackages (packages ++ [ haskell-indexer ] );
 
     ghcWithHoogle = selectFrom:
       let
