@@ -1,0 +1,15 @@
+diff --git a/mk/build.mk b/mk/build.mk
+new file mode 100644
+index 0000000000..689ddc0b7d
+--- /dev/null
++++ b/mk/build.mk
+@@ -0,0 +1,9 @@
++BuildFlavour = quickest
++
++ifneq "$(BuildFlavour)" ""
++include mk/flavours/$(BuildFlavour).mk
++endif
++
++stage = 1
++
++STRIP_CMD = :

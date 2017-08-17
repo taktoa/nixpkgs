@@ -1012,119 +1012,13 @@ self: super: {
   # https://github.com/strake/lenz-template.hs/issues/1
   lenz-template = doJailbreak super.lenz-template;
 
-  # https://github.com/haskell-hvr/resolv/issues/1
-  resolv = dontCheck super.resolv;
+  hadrian = self.callCabal2nix "hadrian" (
+    pkgs.fetchFromGitHub {
+      owner  = "snowleopard";
+      repo   = "hadrian";
+      rev    = "da397291a9052387862c27c87ec29b6fce2c7d77";
+      sha256 = "0f01cjkvp7bv9msk9syj70lhf82llydsabv59fnch2q76fcjh6i5";
+    }) {};
 
-  # spdx 0.2.2.0 needs older tasty
-  # was fixed in spdx master (4288df6e4b7840eb94d825dcd446b42fef25ef56)
-  spdx = dontCheck super.spdx;
-
-  # The test suite does not know how to find the 'alex' binary.
-  alex = overrideCabal super.alex (drv: {
-    testSystemDepends = (drv.testSystemDepends or []) ++ [pkgs.which];
-    preCheck = ''export PATH="$PWD/dist/build/alex:$PATH"'';
-  });
-
-  # This package refers to the wrong library (itself in fact!)
-  vulkan = super.vulkan.override { vulkan = pkgs.vulkan-loader; };
-
-  # # Builds only with the latest version of indexed-list-literals.
-  # vector-sized_1_0_3_0 = super.vector-sized_1_0_3_0.override {
-  #   indexed-list-literals = self.indexed-list-literals_0_2_1_1;
-  # };
-
-  # https://github.com/dmwit/encoding/pull/3
-  encoding = appendPatch super.encoding ./patches/encoding-Cabal-2.0.patch;
-
-  # Work around overspecified constraint on github ==0.18.
-  github-backup = doJailbreak super.github-backup;
-
-  # https://github.com/fpco/streaming-commons/issues/49
-  streaming-commons = dontCheck super.streaming-commons;
-
-  # Test suite depends on old QuickCheck 2.10.x.
-  cassava = dontCheck super.cassava;
-
-  # Test suite depends on cabal-install
-  doctest = dontCheck super.doctest;
-
-  # https://github.com/haskell-servant/servant-auth/issues/113
-  servant-auth-client = dontCheck super.servant-auth-client;
-
-  # Test has either build errors or fails anyway, depending on the compiler.
-  vector-algorithms = dontCheck super.vector-algorithms;
-
-  # The test suite attempts to use the network.
-  dhall = dontCheck super.dhall;
-
-  # https://github.com/well-typed/cborg/issues/174
-  cborg = doJailbreak super.cborg;
-  serialise = doJailbreak (dontCheck super.serialise);
-
-  # https://github.com/phadej/tree-diff/issues/19
-  tree-diff = doJailbreak super.tree-diff;
-
-  # https://github.com/haskell-hvr/hgettext/issues/14
-  hgettext = doJailbreak super.hgettext;
-
-  # The test suite is broken. Break out of "base-compat >=0.9.3 && <0.10, hspec >=2.4.4 && <2.5".
-  haddock-library = doJailbreak (dontCheck super.haddock-library);
-  haddock-library_1_6_0 = doJailbreak (dontCheck super.haddock-library_1_6_0);
-
-  # cabal2nix requires hpack >= 0.29.6 but the LTS has hpack-0.28.2.
-  # Lets remove this once the LTS has upraded to 0.29.6.
-  hpack = super.hpack_0_29_7;
-
-  # The test suite does not know how to find the 'cabal2nix' binary.
-  cabal2nix = overrideCabal super.cabal2nix (drv: {
-    preCheck = ''
-      export PATH="$PWD/dist/build/cabal2nix:$PATH"
-      export HOME="$TMPDIR/home"
-    '';
-  });
-
-  # Break out of "aeson <1.3, temporary <1.3".
-  stack = doJailbreak super.stack;
-
-  # https://github.com/pikajude/stylish-cabal/issues/11
-  stylish-cabal = super.stylish-cabal.override { hspec = self.hspec_2_4_8; hspec-core = self.hspec-core_2_4_8; };
-  hspec_2_4_8 = super.hspec_2_4_8.override { hspec-core = self.hspec-core_2_4_8; hspec-discover = self.hspec-discover_2_4_8; };
-
-  # musl fixes
-  # dontCheck: use of non-standard strptime "%s" which musl doesn't support; only used in test
-  unix-time = if pkgs.stdenv.hostPlatform.isMusl then dontCheck super.unix-time else super.unix-time;
-  # dontCheck: printf double rounding behavior
-  prettyprinter = if pkgs.stdenv.hostPlatform.isMusl then dontCheck super.prettyprinter else super.prettyprinter;
-
-  # Fix with Cabal 2.2, https://github.com/guillaume-nargeot/hpc-coveralls/pull/73
-  hpc-coveralls = appendPatch super.hpc-coveralls (pkgs.fetchpatch {
-    url = "https://github.com/guillaume-nargeot/hpc-coveralls/pull/73/commits/344217f513b7adfb9037f73026f5d928be98d07f.patch";
-    sha256 = "056rk58v9h114mjx62f41x971xn9p3nhsazcf9zrcyxh1ymrdm8j";
-  });
-
-  # Tests require a browser: https://github.com/ku-fpg/blank-canvas/issues/73
-  blank-canvas = dontCheck super.blank-canvas;
-  blank-canvas_0_6_2 = dontCheck super.blank-canvas_0_6_2;
-
-  # needed because of testing-feat >=0.4.0.2 && <1.1
-  language-ecmascript = doJailbreak super.language-ecmascript;
-
-  # sexpr is old, broken and has no issue-tracker. Let's fix it the best we can.
-  sexpr =
-    appendPatch (overrideCabal super.sexpr (drv: {
-      isExecutable = false;
-      libraryHaskellDepends = drv.libraryHaskellDepends ++ [self.QuickCheck];
-    })) ./patches/sexpr-0.2.1.patch;
-
-  # Can be removed once yi-language >= 0.18 is in the LTS
-  yi-core = super.yi-core.override { yi-language = self.yi-language_0_18_0; };
-
-  # https://github.com/MarcWeber/hasktags/issues/52
-  hasktags = dontCheck super.hasktags;
-
-  # https://github.com/haskell/hoopl/issues/50
-  hoopl = dontCheck super.hoopl;
-
-  # https://github.com/snapframework/xmlhtml/pull/37
-  xmlhtml = doJailbreak super.xmlhtml;
 } // import ./configuration-tensorflow.nix {inherit pkgs haskellLib;} self super
+  // import ./haskell-indexer { inherit pkgs; } self super

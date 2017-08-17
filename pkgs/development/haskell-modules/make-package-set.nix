@@ -62,7 +62,12 @@ let
     })) (drv: {
         isLibrary = false;
         postFixup = "rm -rf $out/lib $out/share $out/nix-support";
-    });
+      });
+    haskell-indexer = pkgs.haskellPackages.haskell-indexer-pipeline-ghckythe-wrapper;
+    haskell-indexer-wrapper = import ./haskell-indexer-wrapper.nix {
+      inherit stdenv;
+      inherit (pkgs) haskellPackages;
+    };
   };
 
   mkDerivation = makeOverridable mkDerivationImpl;
@@ -218,6 +223,14 @@ in package-set { inherit pkgs stdenv callPackage; } self // {
       in if returnShellEnv then (modifier drv).env else modifier drv;
 
     ghcWithPackages = selectFrom: withPackages (selectFrom self);
+
+    ghcWithIndexer = selectFrom:
+      let
+        packages = selectFrom self;
+        haskell-indexer = callPackage ./haskell-indexer.nix {
+          inherit packages;
+        };
+      in withPackages (packages ++ [ haskell-indexer ]);
 
     ghcWithHoogle = selectFrom:
       let

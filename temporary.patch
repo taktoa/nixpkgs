@@ -1,0 +1,12 @@
+diff --git a/ghc.mk b/ghc.mk
+index ec9590a..e7ddbca 100644
+--- a/ghc.mk
++++ b/ghc.mk
+@@ -758,6 +758,7 @@ endif
+ # Add $(GhcLib(Extra)HcOpts) to all package builds
+ $(foreach pkg,$(PACKAGES_STAGE1) $(PACKAGES_STAGE2),$(eval libraries/$(pkg)_dist-install_HC_OPTS += $$(GhcLibHcOpts)))
+ $(foreach pkg,$(PACKAGES_STAGE1) $(PACKAGES_STAGE2),$(eval libraries/$(pkg)_dist-install_EXTRA_HC_OPTS += $$(GhcLibExtraHcOpts)))
++$(foreach pkg,$(PACKAGES_STAGE1) $(PACKAGES_STAGE2),$(eval libraries/$(pkg)_dist-install_HC_OPTS += NIX_HASKELL_PACKAGE_NAME=$(pkg)))
+ 
+ # Add $(GhcBootLib(Extra)HcOpts) to all stage0 package builds
+ $(foreach pkg,$(PACKAGES_STAGE0),$(eval libraries/$(pkg)_dist-boot_HC_OPTS += $$(GhcBootLibHcOpts)))

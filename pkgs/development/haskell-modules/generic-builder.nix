@@ -1,6 +1,7 @@
 { stdenv, buildPackages, buildHaskellPackages, ghc
 , jailbreak-cabal, hscolour, cpphs, nodejs
 , buildPlatform, hostPlatform
+, haskell-indexer-wrapper, haskell-indexer
 }:
 
 let
@@ -24,6 +25,7 @@ in
 , doCheck ? !isCross && stdenv.lib.versionOlder "7.4" ghc.version
 , doBenchmark ? false
 , doHoogle ? true
+, doIndexer ? false
 , editedCabalFile ? null
 , enableLibraryProfiling ? true
 , enableExecutableProfiling ? false
@@ -165,7 +167,10 @@ let
     "--ghcjs"
   ] ++ optionals isCross ([
     "--configure-option=--host=${hostPlatform.config}"
-  ] ++ crossCabalFlags);
+  ] ++ crossCabalFlags)
+  ++ optionals doIndexer [
+    "-w${haskell-indexer-wrapper}/bin/ghc-8.0.2"
+  ];
 
   setupCompileFlags = [
     (optionalString (!coreSetup) "-${nativePackageDbFlag}=$setupPackageConfDir")
@@ -487,5 +492,6 @@ stdenv.mkDerivation ({
 // optionalAttrs (postFixup != "")      { inherit postFixup; }
 // optionalAttrs (dontStrip)            { inherit dontStrip; }
 // optionalAttrs (hardeningDisable != []) { inherit hardeningDisable; }
-// optionalAttrs (buildPlatform.libc == "glibc"){ LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"; }
+// optionalAttrs (buildPlatform.isLinux){ LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"; }
+// optionalAttrs doIndexer              { NIX_HASKELL_PACKAGE_NAME = pname; NIX_HASKELL_PACKAGE_VERSION = version; }
 )
