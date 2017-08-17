@@ -62,4 +62,24 @@ self: super: {
   # This builds needs the latest Cabal version.
   cabal2nix = super.cabal2nix.overrideScope (self: super: { Cabal = self.Cabal_2_0_0_2; });
 
+  proto-lens             = pkgs.haskell.lib.addBuildTool super.proto-lens             pkgs.protobuf3_1;
+  proto-lens-descriptors = pkgs.haskell.lib.addBuildTool super.proto-lens-descriptors pkgs.protobuf3_1;
+  proto-lens-protoc      = pkgs.haskell.lib.addBuildTool super.proto-lens-protoc      pkgs.protobuf3_1;
+  proto-lens-combinators = pkgs.haskell.lib.addBuildTool super.proto-lens-combinators pkgs.protobuf3_1;
+
+  haskell-indexer-backend-core              = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-backend-core.nix {});
+  haskell-indexer-backend-ghc               = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-backend-ghc.nix {});
+  haskell-indexer-frontend-kythe            = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-frontend-kythe.nix {});
+  haskell-indexer-pathutil                  = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-pathutil.nix {});
+  haskell-indexer-pipeline-ghckythe-wrapper = super.callPackage ./haskell-indexer-pipeline-ghckythe-wrapper.nix {};
+  haskell-indexer-pipeline-ghckythe         = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-pipeline-ghckythe.nix {});
+  haskell-indexer-translate                 = pkgs.haskell.lib.doJailbreak (super.callPackage ./haskell-indexer-translate.nix {});
+  kythe-proto                               = pkgs.haskell.lib.addBuildTool (pkgs.haskell.lib.doJailbreak (super.callPackage ./kythe-proto.nix { kythe = pkgs.kythe; })) pkgs.protobuf3_1;
+  kythe-schema                              = pkgs.haskell.lib.doJailbreak (super.callPackage ./kythe-schema.nix {});
+  text-offset                               = pkgs.haskell.lib.doJailbreak (super.callPackage ./text-offset.nix {});
+
+  hspec-core = pkgs.haskell.lib.dontCheck super.hspec-core;
+
+  temporary = pkgs.haskell.lib.dontCheck super.temporary;
+
 }

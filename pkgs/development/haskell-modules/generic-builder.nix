@@ -1,5 +1,5 @@
 { stdenv, fetchurl, ghc, pkgconfig, glibcLocales, coreutils, gnugrep, gnused
-, jailbreak-cabal, hscolour, cpphs, nodejs, lib, removeReferencesTo
+, jailbreak-cabal, hscolour, cpphs, nodejs, lib, removeReferencesTo, haskell-indexer-wrapper, haskell-indexer
 }:
 let isCross = (ghc.cross or null) != null; in
 
@@ -16,6 +16,7 @@ let isCross = (ghc.cross or null) != null; in
 , doCheck ? !isCross && (stdenv.lib.versionOlder "7.4" ghc.version)
 , doBenchmark ? false
 , doHoogle ? true
+, doIndexer ? false
 , editedCabalFile ? null
 , enableLibraryProfiling ? false
 , enableExecutableProfiling ? false
@@ -136,7 +137,10 @@ let
     "--ghcjs"
   ] ++ optionals isCross ([
     "--configure-option=--host=${ghc.cross.config}"
-  ] ++ crossCabalFlags);
+  ] ++ crossCabalFlags)
+  ++ optionals doIndexer [
+    "-w${haskell-indexer-wrapper}/bin/ghc-8.0.2"
+  ];
 
   setupCompileFlags = [
     (optionalString (!coreSetup) "-${packageDbFlag}=$packageConfDir")
@@ -284,6 +288,9 @@ stdenv.mkDerivation ({
 
     runHook postConfigure
   '';
+
+    #    echo Indexer output: $out/share/logs
+    # export INDEXER_OUTPUT_DIR="$out/share/logs"
 
   buildPhase = ''
     runHook preBuild
