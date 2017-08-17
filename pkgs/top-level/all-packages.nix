@@ -7245,6 +7245,8 @@ with pkgs;
 
   kube-aws = callPackage ../development/tools/kube-aws { };
 
+  kythe = callPackage ../development/tools/kythe { };
+
   lcov = callPackage ../development/tools/analysis/lcov { };
 
   leiningen = callPackage ../development/tools/build-managers/leiningen { };
