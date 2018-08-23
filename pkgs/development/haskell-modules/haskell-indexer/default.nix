@@ -5,8 +5,11 @@ with { inherit (pkgs.haskell.lib) addBuildTool doJailbreak dontCheck; };
 with rec {
   haskell-indexer-src = pkgs.fetchgit {
     url    = "https://github.com/taktoa/haskell-indexer";
-    rev    = "2712e450769a300c5d9f31f0cec4008d2bed4a0c";
-    sha256 = "1flddc8d84kdx4wynpl131i1knb439jwrcx3dzdqqy5ymyw1lh57";
+    rev    = "5f246a9b537c70f3c088bd4628e0dcc27b314713";
+    sha256 = "1z8gy5f7vbkrd0qxy1wrxapbpc865rwj1yrzkmjfx0i0i3hqv5z1";
+    # url    = "https://github.com/taktoa/haskell-indexer";
+    # rev    = "2712e450769a300c5d9f31f0cec4008d2bed4a0c";
+    # sha256 = "1flddc8d84kdx4wynpl131i1knb439jwrcx3dzdqqy5ymyw1lh57";
     # url    = "https://github.com/mpickering/haskell-indexer";
     # rev    = "1f9d412cfaa81563d959ad93d3fd2e6ba2b6beaa";
     # sha256 = "01drd8i0mhsw44nj977m2h2ww08i7sh23l3qig830s1sr2r57bzk";
