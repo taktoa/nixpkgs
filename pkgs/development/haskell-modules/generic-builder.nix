@@ -169,7 +169,7 @@ let
     "--configure-option=--host=${hostPlatform.config}"
   ] ++ crossCabalFlags)
   ++ optionals doIndexer [
-    "-w${haskell-indexer-wrapper}/bin/ghc-8.0.2"
+    "-w${haskell-indexer-wrapper}/bin/ghc-8.4.3"
   ];
 
   setupCompileFlags = [

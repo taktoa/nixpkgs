@@ -48,3 +48,4 @@ stdenv.mkDerivation rec {
     license = stdenv.lib.licenses.asl20;
     platforms = stdenv.lib.platforms.all;
   };
+}

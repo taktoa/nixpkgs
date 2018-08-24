@@ -19,8 +19,8 @@ stdenv.mkDerivation {
     done
     rm -v "$out/bin/ghc"
     rm -v "$out/bin/ghc-${haskellPackages.ghc.version}"
-    install -m755 -D ./ghc-wrapper.sh "$out/bin/ghc-8.0.2"
-    ln -sv "$out/bin/ghc-8.0.2" "$out/bin/ghc"
+    install -m755 -D ./ghc-wrapper.sh "$out/bin/ghc-8.4.3"
+    ln -sv "$out/bin/ghc-8.4.3" "$out/bin/ghc"
   '';
   inherit (haskellPackages.ghc) meta;
 }

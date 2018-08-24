@@ -1128,9 +1128,6 @@ self: super: {
   # https://github.com/snapframework/xmlhtml/pull/37
   xmlhtml = doJailbreak super.xmlhtml;
 
-  vector-algorithms = dontCheck super.vector-algorithms;
-  doctest = dontCheck super.doctest;
-
   hadrian = self.callCabal2nix "hadrian" (
     pkgs.fetchFromGitHub {
       owner  = "snowleopard";

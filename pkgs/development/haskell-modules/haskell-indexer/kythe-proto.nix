@@ -1,4 +1,4 @@
-{ haskell-indexer-src, mkDerivation, base, Cabal, fetchgit, proto-lens-protoc, stdenv, kythe }:
+{ haskell-indexer-src, mkDerivation, base, Cabal, fetchgit, proto-lens-runtime, proto-lens-setup, stdenv, kythe }:
 mkDerivation rec {
   pname = "kythe-proto";
   version = "0.1.0.0";
@@ -9,8 +9,8 @@ mkDerivation rec {
     cp -r ${kythe} $sourceRoot/third_party/kythe/kythe
     chmod 755 -R $sourceRoot/third_party/kythe
   '';
-  setupHaskellDepends = [ base Cabal proto-lens-protoc ];
-  libraryHaskellDepends = [ base proto-lens-protoc ];
+  setupHaskellDepends = [ base Cabal proto-lens-setup ];
+  libraryHaskellDepends = [ base proto-lens-runtime ];
   homepage = "https://github.com/google/haskell-indexer";
   description = "Proto bindings for Kythe protobufs";
   license = stdenv.lib.licenses.asl20;

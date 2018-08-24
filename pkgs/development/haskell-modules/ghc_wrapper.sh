@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "$1" = "--numeric-version" ]; then
-    echo "8.0.2"
+    echo "8.4.3"
     exit
 fi
 
