@@ -46,6 +46,9 @@ self: super: {
   # $ hoogle server
   hoogleLocal = { packages ? [] }: self.callPackage ./hoogle.nix { inherit packages; };
 
+  # FIXME: doc
+  kytheLocal = { packages ? [] }: self.callPackage ./kythe.nix { inherit packages; };
+
   # Break infinite recursions.
   attoparsec-varword = super.attoparsec-varword.override { bytestring-builder-varword = dontCheck self.bytestring-builder-varword; };
   clock = dontCheck super.clock;

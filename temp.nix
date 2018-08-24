@@ -22,6 +22,14 @@ rec {
   lensIndex = indexedHP.lens;
   reflectionIndex = indexedHP.reflection;
 
+  kytheLocalExample = indexedHP.kytheLocal {
+    packages = [
+      indexedHP.lens
+      indexedHP.conduit
+      indexedHP.leveldb-haskell
+    ];
+  };
+
   haskell-indexer-wrapper = (
     import ./pkgs/development/haskell-modules/haskell-indexer-wrapper.nix {
       stdenv = pkgs.stdenv;
