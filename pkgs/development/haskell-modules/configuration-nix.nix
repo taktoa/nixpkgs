@@ -512,4 +512,7 @@ self: super: builtins.intersectAttrs super {
   }));
 
   judy = super.judy.override { Judy = pkgs.judy; };
+
+  # Test tries to do network IO and is nondeterministic (QuickCheck) by default.
+  datadog = dontCheck super.datadog;
 }
