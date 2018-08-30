@@ -96,4 +96,7 @@ self: super: {
     haddock-library = dontHaddock (dontCheck self.haddock-library_1_5_0_1);
   }));
 
+  # This build works with `base == 4.10`, but not with `base >= 4.11`, hence why
+  # this override is here and not in `configuration-common.nix`.
+  graph-rewriting = doJailbreak super.graph-rewriting;
 }

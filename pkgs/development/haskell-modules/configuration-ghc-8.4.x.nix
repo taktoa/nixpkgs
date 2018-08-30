@@ -56,4 +56,8 @@ self: super: {
           };
     in appendPatch super.hadoop-rpc patch;
 
+  # Broken because SemigroupMonoidProposal went through in `base == 4.11`.
+  # Should be easy to patch if anyone's interested in doing so.
+  # Difficult to upstream any fixes, since it's not on any VCS.
+  graph-rewriting = markBroken super.graph-rewriting;
 }
