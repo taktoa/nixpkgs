@@ -1134,4 +1134,7 @@ self: super: {
 
   # https://github.com/andrewthad/disjoint-containers/issues/8
   disjoint-containers = doJailbreak (dontCheck super.disjoint-containers);
+
+  # https://github.com/amosr/limp/issues/3
+  limp = doJailbreak super.limp;
 } // import ./configuration-tensorflow.nix {inherit pkgs haskellLib;} self super
