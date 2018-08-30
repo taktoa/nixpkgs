@@ -515,4 +515,6 @@ self: super: builtins.intersectAttrs super {
 
   # Test tries to do network IO and is nondeterministic (QuickCheck) by default.
   datadog = dontCheck super.datadog;
+
+  bullet = addPkgconfigDepend super.bullet pkgs.mesa_glu;
 }
