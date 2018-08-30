@@ -1130,4 +1130,7 @@ self: super: {
 
   # https://github.com/snapframework/xmlhtml/pull/37
   xmlhtml = doJailbreak super.xmlhtml;
+
+  # https://github.com/andrewthad/disjoint-containers/issues/8
+  disjoint-containers = doJailbreak (dontCheck super.disjoint-containers);
 } // import ./configuration-tensorflow.nix {inherit pkgs haskellLib;} self super
