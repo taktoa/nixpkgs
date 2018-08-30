@@ -1020,7 +1020,8 @@ self: super: {
 
   # spdx 0.2.2.0 needs older tasty
   # was fixed in spdx master (4288df6e4b7840eb94d825dcd446b42fef25ef56)
-  spdx = dontCheck super.spdx;
+  # also has overly tight bound on `base`
+  spdx = dontCheck (doJailbreak super.spdx);
 
   # The test suite does not know how to find the 'alex' binary.
   alex = overrideCabal super.alex (drv: {
