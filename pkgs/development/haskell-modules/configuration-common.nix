@@ -1137,4 +1137,7 @@ self: super: {
 
   # https://github.com/amosr/limp/issues/3
   limp = doJailbreak super.limp;
+
+  # Remove once 34474acf2f3974c2c252fd9628024313e8d017f0 is on Hackage
+  algebraic-graphs = doJailbreak super.algebraic-graphs;
 } // import ./configuration-tensorflow.nix {inherit pkgs haskellLib;} self super
