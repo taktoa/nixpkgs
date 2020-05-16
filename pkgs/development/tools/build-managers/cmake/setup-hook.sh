@@ -71,16 +71,26 @@ cmakeConfigurePhase() {
     # This ensures correct paths with multiple output derivations
     # It requires the project to use variables from GNUInstallDirs module
     # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
-    cmakeFlags="-DCMAKE_INSTALL_BINDIR=${!outputBin}/bin $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_SBINDIR=${!outputBin}/sbin $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_INCLUDEDIR=${!outputInclude}/include $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_OLDINCLUDEDIR=${!outputInclude}/include $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_MANDIR=${!outputMan}/share/man $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_INFODIR=${!outputInfo}/share/info $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_DOCDIR=${!outputDoc}/share/doc/${shareDocName} $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_LIBDIR=${!outputLib}/lib $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_LIBEXECDIR=${!outputLib}/libexec $cmakeFlags"
-    cmakeFlags="-DCMAKE_INSTALL_LOCALEDIR=${!outputLib}/share/locale $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_BINDIR=bin $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_SBINDIR=sbin $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_INCLUDEDIR=include $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_OLDINCLUDEDIR=include $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_MANDIR=share/man $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_INFODIR=share/info $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_DOCDIR=share/doc/${shareDocName} $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_LIBDIR=@libDir@ $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_LIBEXECDIR=libexec $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_LOCALEDIR=share/locale $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_BINDIR=${!outputBin}/bin $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_SBINDIR=${!outputBin}/sbin $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_INCLUDEDIR=${!outputInclude}/include $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_OLDINCLUDEDIR=${!outputInclude}/include $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_MANDIR=${!outputMan}/share/man $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_INFODIR=${!outputInfo}/share/info $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_DOCDIR=${!outputDoc}/share/doc/${shareDocName} $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_LIBDIR=${!outputLib}/@libDir@ $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_LIBEXECDIR=${!outputLib}/libexec $cmakeFlags"
+    cmakeFlags="-DCMAKE_INSTALL_FULL_LOCALEDIR=${!outputLib}/share/locale $cmakeFlags"
 
     # Don’t build tests when doCheck = false
     if [ -z "${doCheck-}" ]; then

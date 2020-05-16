@@ -51,6 +51,8 @@ stdenv.mkDerivation rec {
     ++ lib.optional useQt4 qt4
     ++ lib.optional withQt5 qtbase;
 
+  libDir = if stdenv.targetPlatform.is64bit then "lib64" else "lib";
+
   depsBuildBuild = [ buildPackages.stdenv.cc ];
 
   propagatedBuildInputs = lib.optional stdenv.isDarwin ps;
