@@ -15,8 +15,10 @@ in stdenv.mkDerivation {
   src = if stdenv.targetPlatform.isXtensa then fetchFromGitHub {
     owner = "espressif";
     repo = "newlib-esp32";
-    rev = "1590f7fa92e899e86df4774a7f743af19fe077e7";
-    sha256 = "0pcs2y81i99niic2i78h0xk2fapmyklpwkxzswmg9dbwyyzpkfrk";
+    rev = "5426f77fcad9c27374942c2d318102a1e8b82243";
+    sha256 = "01akp8g3gkff878s8051lvn75s6p28rpd79r5cwmyyn118pf3xgw";
+    # rev = "1590f7fa92e899e86df4774a7f743af19fe077e7";
+    # sha256 = "0pcs2y81i99niic2i78h0xk2fapmyklpwkxzswmg9dbwyyzpkfrk";
   } else fetchurl {
     url = "ftp://sourceware.org/pub/newlib/newlib-${version}.tar.gz";
     sha256 = "0ricyx792ig2cb2x31b653yb7w7f7mf2111dv5h96lfzmqz9xpaq";
