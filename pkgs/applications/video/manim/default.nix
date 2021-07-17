@@ -1,19 +1,20 @@
 { lib, buildPythonApplication, fetchFromGitHub, pythonOlder, file, fetchpatch
-, cairo, ffmpeg, sox, xdg-utils, texlive
+, cairo, ffmpeg, sox, xdg-utils
 , colour, numpy, pillow, progressbar, scipy, tqdm, opencv , pycairo, pydub
+, pygments, mapbox-earcut, networkx, rich, click-default-group
+, moderngl-window, cloup, watchdog, manimpango, screeninfo, decorator
 , pbr, fetchPypi
 }:
+
 buildPythonApplication rec {
   pname = "manim";
-  version = "0.1.10";
+  version = "0.8.0";
 
   src = fetchPypi {
-    pname = "manimlib";
+    pname = "manim";
     inherit version;
-    sha256 = "0vg9b3rwypq5zir74pi0pmj47yqlcg7hrvscwrpjzjbqq2yihn49";
+    sha256 = "07giymxqwxjnk1i6iqy9961fcwppwaaw7nvygb1zg7lfaks0akjy";
   };
-
-  patches = [ ./remove-dependency-constraints.patch ];
 
   nativeBuildInputs = [ pbr ];
 
@@ -27,26 +28,23 @@ buildPythonApplication rec {
     opencv
     pycairo
     pydub
+    pygments
+    mapbox-earcut
+    networkx
+    rich
+    click-default-group
+    moderngl-window
+    cloup
+    watchdog
+    manimpango
+    screeninfo
+    decorator
 
     cairo sox ffmpeg xdg-utils
   ];
 
-  # Test with texlive to see whether it works but don't propagate
-  # because it's huge and optional
-  # TODO: Use smaller TexLive distribution
-  #       Doesn't need everything but it's hard to figure out what it needs
-  checkInputs = [ cairo sox ffmpeg xdg-utils texlive.combined.scheme-full ];
-
-  # Simple test and complex test with LaTeX
-  checkPhase = ''
-    for scene in SquareToCircle OpeningManimExample
-    do
-      python3 manim.py example_scenes.py $scene -l
-      tail -n 20 files/Tex/*.log  # Print potential LaTeX erorrs
-      ${file}/bin/file videos/example_scenes/480p15/$scene.mp4 \
-        | tee | grep -F "ISO Media, MP4 Base Media v1 [IS0 14496-12:2003]"
-    done
-  '';
+  dontUseSetuptoolsCheck = true;
+  dontCheck = true;
 
   disabled = pythonOlder "3.7";
 
