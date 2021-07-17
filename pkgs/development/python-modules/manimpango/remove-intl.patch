@@ -1,0 +1,12 @@
+diff --git a/setup.py b/setup.py
+index 74360a5..2ab4b3e 100644
+--- a/setup.py
++++ b/setup.py
+@@ -60,7 +60,6 @@ NEEDED_LIBS = [
+     "pango-1.0",
+     "gobject-2.0",
+     "glib-2.0",
+-    "intl",
+     "harfbuzz",
+     "cairo",
+     "fontconfig",
